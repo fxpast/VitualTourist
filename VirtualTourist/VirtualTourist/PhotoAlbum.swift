@@ -17,12 +17,14 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
     @IBOutlet weak var IBMap: MKMapView!
     @IBOutlet weak var IBNewCollection: UIButton!
     @IBOutlet weak var IBAlbum: UICollectionView!
+    @IBOutlet weak var IBEdit: UIBarButtonItem!
+    
+    var editFlag = false
     
     var pin: Pin!
     var photo:Photo!
     
     var running:Bool!
-    let qtePhotos = 30
     
     var latitude:CLLocationDegrees!
     var longitude:CLLocationDegrees!
@@ -91,126 +93,7 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
         
         
         if pin.photos!.count == 0  {
-            
-            TheImageDB.sharedInstance().displayImageFromFlickrBySearch(longitude, Lat: latitude, completionHandlerFlickrBySearch: { (success, photosArray, errorString) in
-                
-                
-                if success {
-                    
-                    
-                    var dictionary = [String : AnyObject]()
-                    
-                    if photosArray!.count == 0 {
-                        
-                        
-                        dictionary[Photo.Keys.Title] = "noimage"
-                        dictionary[Photo.Keys.UrlString] = ""
-                        
-                        performUIUpdatesOnMain {
-                            
-                            dictionary[Photo.Keys.OnePin] = self.pin
-                            
-                            self.photo = Photo(dictionary: dictionary, context: self.sharedContext)
-                            // Append the photo to the array
-                            self.photo.onePin = self.pin
-                            
-                            // Save the context.
-                            do {
-                                try self.sharedContext.save()
-                            } catch _ {}
-                            
-                            self.IBAlbum.reloadData()
-                            
-                            self.IBNewCollection.enabled = true
-                            self.running = false
-                            
-                        }
-                        
-                        
-                    }
-                    else{
-                        
-                        for photoIndex in 0...photosArray!.count-1 {
-                            
-                            let photoDictionary = photosArray![photoIndex] as [String:AnyObject]
-                            let photoTitle = photoDictionary[TheImageDB.Constants.FlickrResponseKeys.Title] as? String
-                            
-                            guard let imageUrlString = photoDictionary[TheImageDB.Constants.FlickrResponseKeys.MediumURL] as? String else {
-                                
-                                performUIUpdatesOnMain {
-                                    self.displayAlert("Error", mess: "Impossible de trouver cle : \(TheImageDB.Constants.FlickrResponseKeys.MediumURL) dans \(photoDictionary)")
-                                    self.running = false
-                                }
-                                
-                                return
-                            }
-                            
-                            
-                            let imageURL = NSURL(string: imageUrlString)
-                            if NSData(contentsOfURL: imageURL!) != nil {
-                                
-                                performUIUpdatesOnMain {
-                                    
-                                    dictionary[Photo.Keys.Title] = photoTitle
-                                    dictionary[Photo.Keys.UrlString] = imageURL?.absoluteString
-                                    dictionary[Photo.Keys.Image] = NSData(contentsOfURL: imageURL!)
-                                    dictionary[Photo.Keys.OnePin] = self.pin
-                                    
-                                    self.photo = Photo(dictionary: dictionary, context: self.sharedContext)
-                                    // Append the photo to the array
-                                    self.photo.onePin = self.pin
-                                    
-                                    // Save the context.
-                                    do {
-                                        try self.sharedContext.save()
-                                    } catch _ {}
-                                    
-                                    self.IBAlbum.reloadData()
-                                    
-                                }
-                                
-                                
-                            }
-                            else {
-                                
-                                
-                                performUIUpdatesOnMain {
-                                    self.displayAlert("Error", mess: "l'image n'existe pas :\(imageURL)")
-                                    self.running = false
-                                }
-                                return
-                            }
-                            
-                            
-                            if photoIndex == self.qtePhotos {
-                                break
-                            }
-                        }
-                        
-                        performUIUpdatesOnMain({
-                            
-                            
-                            self.IBNewCollection.enabled = true
-                            self.running = false
-                            
-                            
-                        })
-                        
-                        
-                    }
-                    
-                    
-                }
-                else {
-                    performUIUpdatesOnMain {
-                        self.displayAlert("Error", mess: errorString!)
-                        self.running = false
-                        
-                    }
-                }
-                
-            })
-            
+            loadPhotos()
         }
         else {
             
@@ -222,48 +105,11 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
         
     }
     
-    @IBAction func ActionClear(sender: AnyObject) {
-        
-        running = true
-        IBNewCollection.enabled = false
-        
-        
-        performUIUpdatesOnMain({
-            
-            for unPhoto in self.pin.photos! {
-                
-                self.photo = unPhoto as! Photo
-
-                self.photo.title = "noimage"
-                self.photo.urlString = "";
-                self.photo.image = UIImagePNGRepresentation(UIImage(named: "noimage")!)
-                
-                // Save the context.
-                do {
-                    try self.sharedContext.save()
-                } catch let error as NSError {
-                    print(error.debugDescription)
-                    
-                }
-                
-                self.IBAlbum.reloadData()
-                
-            }
-            
-            self.running = false
-            self.IBNewCollection.enabled = true
-            
-            
-        })
-
-        
-        
-    }
     
-    @IBAction func ActionNewCollection(sender: AnyObject) {
+    
+    private func loadPhotos() {
+
         
-        running = true
-        IBNewCollection.enabled = false
         
         TheImageDB.sharedInstance().displayImageFromFlickrBySearch(longitude, Lat: latitude, completionHandlerFlickrBySearch: { (success, photosArray, errorString) in
             
@@ -303,21 +149,8 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
                 }
                 else{
                     
-                    
-                    var totalEditPhotos = 0
-                    for unPhoto in self.pin.photos! {
-                        
-                        self.photo = unPhoto as! Photo
-                        if self.photo.urlString == "" {
-                            totalEditPhotos+=1
-                        }
-                        
-                    }
-                    
-                    
                     for photoIndex in 0...photosArray!.count-1 {
                         
- 
                         let photoDictionary = photosArray![photoIndex] as [String:AnyObject]
                         let photoTitle = photoDictionary[TheImageDB.Constants.FlickrResponseKeys.Title] as? String
                         
@@ -335,40 +168,24 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
                         let imageURL = NSURL(string: imageUrlString)
                         if NSData(contentsOfURL: imageURL!) != nil {
                             
+                            dictionary[Photo.Keys.Title] = photoTitle
+                            dictionary[Photo.Keys.UrlString] = imageURL?.absoluteString
+                            dictionary[Photo.Keys.Image] = NSData(contentsOfURL: imageURL!)
+                            dictionary[Photo.Keys.OnePin] = self.pin
+                            
+                            self.photo = Photo(dictionary: dictionary, context: self.sharedContext)
+                            // Append the photo to the array
+                            self.photo.onePin = self.pin
+                            
+                            
                             performUIUpdatesOnMain {
                                 
-                                if totalEditPhotos > 0 {
-                                
-                                    totalEditPhotos-=1
-                                    for unPhoto in self.pin.photos! {
-                                        
-                                        self.photo = unPhoto as! Photo
-                                        if self.photo.urlString == "" {
-                                            self.photo.urlString = imageURL?.absoluteString
-                                            self.photo.title = photoTitle
-                                            self.photo.image = NSData(contentsOfURL: imageURL!)
-                                            
-                                            break
-                                        }
-                                        
-                                    }
-                                    
-                                }
-                                else {
-                                    self.IBNewCollection.enabled = true
-                                    self.running = false
-                                    
-                                    return
-                                }
-                                
-                            
                                 // Save the context.
                                 do {
                                     try self.sharedContext.save()
                                 } catch _ {}
                                 
                                 self.IBAlbum.reloadData()
-                                
                                 
                             }
                             
@@ -385,9 +202,6 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
                         }
                         
                         
-                        if photoIndex == self.qtePhotos {
-                            break
-                        }
                     }
                     
                     performUIUpdatesOnMain({
@@ -414,6 +228,41 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
             
         })
         
+        
+        
+    }
+    
+    
+    @IBAction func ActionEdit(sender: AnyObject) {
+        
+        editFlag = !editFlag
+        IBEdit.title = (editFlag) ? "Done" : "Edit"
+        
+    }
+    
+    
+    
+    @IBAction func ActionNewCollection(sender: AnyObject) {
+        
+        running = true
+        IBNewCollection.enabled = false
+        
+        
+        performUIUpdatesOnMain({
+            
+            self.sharedContext.deleteObject(self.photo)
+            // Save the context.
+            do {
+                try self.sharedContext.save()
+            } catch let error as NSError {
+                print(error.debugDescription)
+                
+            }
+            
+        })
+        
+        
+        loadPhotos()
         
         
         
@@ -491,23 +340,47 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         
-        if running==false {
+        
+        for (index, value) in self.pin.photos!.enumerate() {
             
-            for (index, value) in self.pin.photos!.enumerate() {
-                
-                if index == indexPath.row {
-                    photo = value as! Photo
-                    break
-                }
-                
+            if index == indexPath.row {
+                photo = value as! Photo
+                break
             }
             
-            var controller = EditImage()
-            controller = self.storyboard?.instantiateViewControllerWithIdentifier("editimage") as! EditImage
-            controller.photo = photo
-            presentViewController(controller, animated: true, completion: nil)
+        }
+        
+        if editFlag==false {
+            
+            if running == false {
+                
+                var controller = EditImage()
+                controller = self.storyboard?.instantiateViewControllerWithIdentifier("editimage") as! EditImage
+                controller.photo = photo
+                presentViewController(controller, animated: true, completion: nil)
+                
+            }
+        }
+        else {
+            
+            performUIUpdatesOnMain({
+                
+                self.sharedContext.deleteObject(self.photo)
+                // Save the context.
+                do {
+                    try self.sharedContext.save()
+                } catch let error as NSError {
+                    print(error.debugDescription)
+                    
+                }
+                
+                self.IBAlbum.reloadData()
+                
+            })
+            
             
         }
+        
         
         
     }

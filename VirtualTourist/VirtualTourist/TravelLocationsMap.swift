@@ -10,6 +10,14 @@ import UIKit
 import MapKit
 import CoreData
 
+
+struct curCoordinate {
+    static var latitude:CLLocationDegrees!
+    static var longitude:CLLocationDegrees!
+}
+
+
+
 class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate {
     
     @IBOutlet weak var IBMap: MKMapView!
@@ -17,8 +25,6 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
     
     
     var pins = [Pin]()
-    var wlat:CLLocationDegrees!
-    var wlon:CLLocationDegrees!
     
     
     var sharedContext: NSManagedObjectContext {
@@ -166,12 +172,13 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
         dictionary[Pin.Keys.Title] = annotation.title
         dictionary[Pin.Keys.Latitude] = annotation.coordinate.latitude
         dictionary[Pin.Keys.Longitude] = annotation.coordinate.longitude
+        dictionary[Pin.Keys.Photos] = NSSet()
         
         
         performUIUpdatesOnMain {
             
             let pinToBeAdded = Pin(dictionary: dictionary, context: self.sharedContext)        
-            pinToBeAdded.photos = NSSet()
+            //pinToBeAdded.photos = NSSet()
             // Append the pin to the array
             
             self.pins.append(pinToBeAdded)
@@ -231,7 +238,7 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
             
             let controller = segue.destinationViewController as! PhotoAlbum            
             for p in pins {
-                if p.latitude as! CLLocationDegrees  == wlat  && p.longitude as! CLLocationDegrees  == wlon {
+                if p.latitude as! CLLocationDegrees  == curCoordinate.latitude  && p.longitude as! CLLocationDegrees  == curCoordinate.longitude {
                     controller.pin = p
                     break
                 }
@@ -272,8 +279,8 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
         if let coord = view.annotation?.coordinate {
             
             
-            wlat = coord.latitude
-            wlon = coord.longitude
+            curCoordinate.latitude = coord.latitude
+            curCoordinate.longitude = coord.longitude
             
             let dictionary = [
                 "latitude" : coord.latitude,

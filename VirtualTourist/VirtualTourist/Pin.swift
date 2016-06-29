@@ -21,6 +21,7 @@ class Pin: NSManagedObject {
         static let Title = "title"
         static let Latitude = "latitude"
         static let Longitude = "longitude"
+        static let Photos = "photos"
         
     }
     
@@ -41,6 +42,7 @@ class Pin: NSManagedObject {
         title = dictionary[Keys.Title] as? String
         latitude = dictionary[Keys.Latitude] as? NSNumber
         longitude = dictionary[Keys.Longitude] as? NSNumber
+        photos = dictionary[Keys.Longitude] as? NSSet
     }
   
     

@@ -110,14 +110,15 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="1Na-5U-gb4">
-                        <barButtonItem key="rightBarButtonItem" title="Clear" id="frO-8C-1hi">
+                        <barButtonItem key="rightBarButtonItem" title="Edit" id="frO-8C-1hi">
                             <connections>
-                                <action selector="ActionClear:" destination="dlf-Oe-s86" id="U9a-sV-cdr"/>
+                                <action selector="ActionEdit:" destination="dlf-Oe-s86" id="X0q-Ab-ndb"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="IBAlbum" destination="e9m-8O-O9z" id="ifR-Nx-E4e"/>
+                        <outlet property="IBEdit" destination="frO-8C-1hi" id="9Dc-ZQ-sau"/>
                         <outlet property="IBMap" destination="zWb-k4-se5" id="NiD-Sg-SfT"/>
                         <outlet property="IBNewCollection" destination="CoB-iR-Kon" id="7Pp-gm-5Me"/>
                     </connections>

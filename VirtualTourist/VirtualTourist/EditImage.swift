@@ -48,10 +48,7 @@ class EditImage: UIViewController {
         performUIUpdatesOnMain({
             
             
-            self.photo.title = "noimage"
-            self.photo.urlString = "";
-            self.photo.image = UIImagePNGRepresentation(UIImage(named: "noimage")!)
-            
+            self.sharedContext.deleteObject(self.photo)
             // Save the context.
             do {
                 try self.sharedContext.save()
