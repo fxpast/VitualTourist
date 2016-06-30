@@ -10,8 +10,6 @@ import Foundation
 
 
 class TheImageDB : NSObject {
-
-    
     
     
     
@@ -25,8 +23,6 @@ class TheImageDB : NSObject {
         
         return Singleton.sharedInstance
     }
-    
-    
     
     
     func displayImageFromFlickrBySearch(Lon:Double, Lat:Double, completionHandlerFlickrBySearch: (success: Bool, photosArray: [[String:AnyObject]]?, errorString: String?) -> Void) {
@@ -58,7 +54,7 @@ class TheImageDB : NSObject {
         let request = NSURLRequest(URL: flickrURLFromParameters(methodParameters))
         let task = session.dataTaskWithRequest(request, completionHandler: {(data, response, error) in
             
-           
+            
             guard (error == nil) else {
                 completionHandlerFlickrBySearch(success: false, photosArray: nil, errorString: "Erreur : \(error)")
                 return
@@ -135,8 +131,8 @@ class TheImageDB : NSObject {
         let session = NSURLSession.sharedSession()
         let request = NSURLRequest(URL: flickrURLFromParameters(methodParameters))
         let task = session.dataTaskWithRequest(request, completionHandler: {(data, response, error) in
-           
-           
+            
+            
             guard (error == nil) else {
                 completionHandlerPageFlickrBySearch(success: false, resultArray: nil, errorString: "Erreur : \(error)")
                 return
@@ -180,7 +176,7 @@ class TheImageDB : NSObject {
             }
             
             completionHandlerPageFlickrBySearch(success: true, resultArray: photosArray, errorString: "")
-          
+            
             
         })
         

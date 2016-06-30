@@ -12,11 +12,11 @@ import CoreData
 import UIKit
 
 
-class EditImage: UIViewController {
+class EditImageViewController: UIViewController {
     
     @IBOutlet weak var IBImageview: UIImageView!
     
-    @IBOutlet weak var IBTitre: UILabel!
+    @IBOutlet weak var IBDelete: UIBarButtonItem!
     
     var photo: Photo!
     
@@ -28,10 +28,13 @@ class EditImage: UIViewController {
     
     
     
+    //MARK: View Delegate
+    
+    
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         
-        IBTitre.text = photo.title
+        navigationItem.title = photo.title
         
         IBImageview.image = UIImage(data: photo.image!)
         
@@ -44,6 +47,9 @@ class EditImage: UIViewController {
     
     @IBAction func ActionDelete(sender: AnyObject) {
         
+        IBDelete.enabled = false
+        IBImageview.image = UIImage(named: "noimage")
+        navigationItem.title = "noimage"
         
         performUIUpdatesOnMain({
             
@@ -59,15 +65,10 @@ class EditImage: UIViewController {
             
         })
         
-        dismissViewControllerAnimated(true, completion: nil)
 
         
     }
-    @IBAction func ActionCancel(sender: AnyObject) {
-        
-        
-        dismissViewControllerAnimated(true, completion: nil)
-    }
+  
     
     
 }

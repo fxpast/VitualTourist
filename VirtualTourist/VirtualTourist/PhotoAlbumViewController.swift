@@ -12,7 +12,7 @@ import CoreData
 import UIKit
 import MapKit
 
-class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
+class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectionViewDelegate, UICollectionViewDataSource {
     
     @IBOutlet weak var IBMap: MKMapView!
     @IBOutlet weak var IBNewCollection: UIButton!
@@ -43,7 +43,7 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
     }
     
     
-    //MARK: UIView Delegate
+    //MARK: View Delegate
     
     override func viewDidLoad() {
         
@@ -107,6 +107,31 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
     
     
     
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        
+        
+        if segue.identifier == "editimage"  {
+            
+            let controller = segue.destinationViewController as! EditImageViewController
+            
+            controller.photo = photo
+        }
+        
+    }
+
+    
+    
+    @IBAction func ActionEdit(sender: AnyObject) {
+        
+        editFlag = !editFlag
+        IBEdit.title = (editFlag) ? "Done" : "Edit"
+        
+    }
+    
+    
+    
+    //MARK: flickr
+    
     private func loadPhotos() {
 
         
@@ -155,13 +180,7 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
                         let photoTitle = photoDictionary[TheImageDB.Constants.FlickrResponseKeys.Title] as? String
                         
                         guard let imageUrlString = photoDictionary[TheImageDB.Constants.FlickrResponseKeys.MediumURL] as? String else {
-                            
-                            performUIUpdatesOnMain {
-                                self.displayAlert("Error", mess: "Impossible de trouver cle : \(TheImageDB.Constants.FlickrResponseKeys.MediumURL) dans \(photoDictionary)")
-                                self.running = false
-                            }
-                            
-                            return
+                            continue
                         }
                         
                         
@@ -192,20 +211,13 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
                             
                         }
                         else {
-                            
-                            
-                            performUIUpdatesOnMain {
-                                self.displayAlert("Error", mess: "l'image n'existe pas :\(imageURL)")
-                                self.running = false
-                            }
-                            return
+                            continue
                         }
                         
                         
                     }
                     
                     performUIUpdatesOnMain({
-                        
                         
                         self.IBNewCollection.enabled = true
                         self.running = false
@@ -222,6 +234,7 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
                 performUIUpdatesOnMain {
                     self.displayAlert("Error", mess: errorString!)
                     self.running = false
+                    self.IBNewCollection.enabled = true
                     
                 }
             }
@@ -229,14 +242,6 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
         })
         
         
-        
-    }
-    
-    
-    @IBAction func ActionEdit(sender: AnyObject) {
-        
-        editFlag = !editFlag
-        IBEdit.title = (editFlag) ? "Done" : "Edit"
         
     }
     
@@ -265,31 +270,7 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
         loadPhotos()
         
         
-        
-        
     }
-    
-    //MARK: Map View Delegate
-    
-    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
-        
-        let reuseId = "pin"
-        
-        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
-        
-        if pinView == nil {
-            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-            pinView!.canShowCallout = true
-            pinView?.pinTintColor = UIColor.redColor()
-            
-        }
-        else {
-            pinView!.annotation = annotation
-        }
-        
-        return pinView
-    }
-    
     
     //MARK: Collection View Delegate
     
@@ -341,6 +322,7 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         
         
+        
         for (index, value) in self.pin.photos!.enumerate() {
             
             if index == indexPath.row {
@@ -350,15 +332,12 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
             
         }
         
+        
         if editFlag==false {
             
             if running == false {
-                
-                var controller = EditImage()
-                controller = self.storyboard?.instantiateViewControllerWithIdentifier("editimage") as! EditImage
-                controller.photo = photo
-                presentViewController(controller, animated: true, completion: nil)
-                
+               
+                performSegueWithIdentifier("editimage", sender: self)
             }
         }
         else {
@@ -384,6 +363,29 @@ class PhotoAlbum: UIViewController, MKMapViewDelegate, UICollectionViewDelegate,
         
         
     }
+    
+    
+    //MARK: Map View Delegate
+    
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+        
+        let reuseId = "pin"
+        
+        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
+        
+        if pinView == nil {
+            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+            pinView!.canShowCallout = true
+            pinView?.pinTintColor = UIColor.redColor()
+            
+        }
+        else {
+            pinView!.annotation = annotation
+        }
+        
+        return pinView
+    }
+    
     
     
     

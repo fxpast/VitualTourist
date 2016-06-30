@@ -6,10 +6,10 @@
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
-        <!--Travel Locations Map-->
+        <!--Travel Locations Map View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="TravelLocationsMap" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="TravelLocationsMapViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
@@ -49,10 +49,10 @@
             </objects>
             <point key="canvasLocation" x="718" y="319"/>
         </scene>
-        <!--Photo Album-->
+        <!--Photo Album View Controller-->
         <scene sceneID="ndc-w2-Xq3">
             <objects>
-                <viewController id="dlf-Oe-s86" customClass="PhotoAlbum" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="dlf-Oe-s86" customClass="PhotoAlbumViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="0dH-fR-XGy"/>
                         <viewControllerLayoutGuide type="bottom" id="8Ni-FY-0k7"/>
@@ -121,16 +121,17 @@
                         <outlet property="IBEdit" destination="frO-8C-1hi" id="9Dc-ZQ-sau"/>
                         <outlet property="IBMap" destination="zWb-k4-se5" id="NiD-Sg-SfT"/>
                         <outlet property="IBNewCollection" destination="CoB-iR-Kon" id="7Pp-gm-5Me"/>
+                        <segue destination="H7j-wg-omo" kind="push" identifier="editimage" id="ae0-pn-i80"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="tEY-aE-wT3" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1296" y="304"/>
         </scene>
-        <!--Edit Image-->
+        <!--Edit Image View Controller-->
         <scene sceneID="vOZ-2b-9XU">
             <objects>
-                <viewController storyboardIdentifier="editimage" id="H7j-wg-omo" customClass="EditImage" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="editimage" id="H7j-wg-omo" customClass="EditImageViewController" customModule="VirtualTourist" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="7hU-cj-2UK"/>
                         <viewControllerLayoutGuide type="bottom" id="13I-nS-uy8"/>
@@ -139,54 +140,33 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cZH-Ri-rCb">
-                                <rect key="frame" x="0.0" y="523" width="320" height="44"/>
-                                <items>
-                                    <barButtonItem title="Cancel" id="0Px-T6-U5n">
-                                        <connections>
-                                            <action selector="ActionCancel:" destination="H7j-wg-omo" id="rCc-Mh-a9n"/>
-                                        </connections>
-                                    </barButtonItem>
-                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="yGT-LO-T2L"/>
-                                    <barButtonItem title="Delete" id="ky3-5I-72L">
-                                        <connections>
-                                            <action selector="ActionDelete:" destination="H7j-wg-omo" id="cpb-jz-t8G"/>
-                                        </connections>
-                                    </barButtonItem>
-                                </items>
-                            </toolbar>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qGP-Ze-5ml">
-                                <rect key="frame" x="0.0" y="64" width="320" height="459"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="qGP-Ze-5ml">
+                                <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3lS-Y1-LuE">
-                                <rect key="frame" x="0.0" y="22" width="320" height="34"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstAttribute="trailingMargin" secondItem="cZH-Ri-rCb" secondAttribute="trailing" constant="-20" id="0zH-IK-idb"/>
-                            <constraint firstItem="3lS-Y1-LuE" firstAttribute="leading" secondItem="PuJ-sG-zhq" secondAttribute="leadingMargin" constant="-20" id="Cx1-8j-pM2"/>
-                            <constraint firstItem="13I-nS-uy8" firstAttribute="top" secondItem="cZH-Ri-rCb" secondAttribute="bottom" constant="1" id="MxC-jG-iIf"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="3lS-Y1-LuE" secondAttribute="trailing" constant="-20" id="PQ7-GU-FLb"/>
-                            <constraint firstItem="qGP-Ze-5ml" firstAttribute="leading" secondItem="PuJ-sG-zhq" secondAttribute="leadingMargin" constant="-20" id="UWW-p0-xZu"/>
-                            <constraint firstItem="qGP-Ze-5ml" firstAttribute="top" secondItem="3lS-Y1-LuE" secondAttribute="bottom" constant="8" id="YRz-AE-Q53"/>
-                            <constraint firstItem="cZH-Ri-rCb" firstAttribute="leading" secondItem="PuJ-sG-zhq" secondAttribute="leadingMargin" constant="-20" id="ZL7-e0-rhz"/>
-                            <constraint firstItem="3lS-Y1-LuE" firstAttribute="top" secondItem="7hU-cj-2UK" secondAttribute="bottom" constant="2" id="cx8-pF-QWf"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="qGP-Ze-5ml" secondAttribute="trailing" constant="-20" id="eYx-Mc-Ipf"/>
-                            <constraint firstItem="cZH-Ri-rCb" firstAttribute="top" secondItem="qGP-Ze-5ml" secondAttribute="bottom" id="po7-qa-qmP"/>
+                            <constraint firstItem="qGP-Ze-5ml" firstAttribute="bottom" secondItem="13I-nS-uy8" secondAttribute="top" id="DdL-an-32g"/>
+                            <constraint firstItem="qGP-Ze-5ml" firstAttribute="leading" secondItem="PuJ-sG-zhq" secondAttribute="leading" id="NpU-u7-4Og"/>
+                            <constraint firstItem="qGP-Ze-5ml" firstAttribute="top" secondItem="7hU-cj-2UK" secondAttribute="bottom" id="ZtV-eY-vdL"/>
+                            <constraint firstAttribute="trailing" secondItem="qGP-Ze-5ml" secondAttribute="trailing" id="i5u-E7-Cjn"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="gfK-jG-JfS">
+                        <barButtonItem key="rightBarButtonItem" title="Delete" id="rgS-w3-n9v">
+                            <connections>
+                                <action selector="ActionDelete:" destination="H7j-wg-omo" id="2e4-nI-bFX"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
+                        <outlet property="IBDelete" destination="rgS-w3-n9v" id="7Ix-q6-4dG"/>
                         <outlet property="IBImageview" destination="qGP-Ze-5ml" id="IDM-lg-wDX"/>
-                        <outlet property="IBTitre" destination="3lS-Y1-LuE" id="HxL-iZ-XSI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="YS4-jV-QGh" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2184" y="188"/>
+            <point key="canvasLocation" x="1804" y="293"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="hJi-8M-s3H">

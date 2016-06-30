@@ -18,7 +18,7 @@ struct curCoordinate {
 
 
 
-class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate {
+class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIGestureRecognizerDelegate, UITextFieldDelegate {
     
     @IBOutlet weak var IBMap: MKMapView!
     @IBOutlet weak var IBtextfield: UITextField!
@@ -40,6 +40,9 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
         return url.URLByAppendingPathComponent("mapRegionArchive").path!
     }
     
+    
+    //MARK: View Delegate
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -50,13 +53,12 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
         pins = fetchAllPins()
         
         restoreMapRegion(false)
-        let longPressGestureRecognizer = UILongPressGestureRecognizer.init(target: self, action:#selector(TravelLocationsMap.handleLongPressRecognizer(_:)))
+        let longPressGestureRecognizer = UILongPressGestureRecognizer.init(target: self, action:#selector(TravelLocationsMapViewController.handleLongPressRecognizer(_:)))
         longPressGestureRecognizer.numberOfTouchesRequired = 1
         longPressGestureRecognizer.minimumPressDuration = 0.5
         longPressGestureRecognizer.delaysTouchesBegan = true
         longPressGestureRecognizer.delegate = self
         view.addGestureRecognizer(longPressGestureRecognizer)
-        
         
     }
     
@@ -65,6 +67,26 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
         super.viewWillAppear(animated)
         loadPins()
     }
+    
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        
+        
+        if segue.identifier == "photoalbum"  {
+            
+            let controller = segue.destinationViewController as! PhotoAlbumViewController
+            for p in pins {
+                if p.latitude  == curCoordinate.latitude   && p.longitude  == curCoordinate.longitude {
+                    controller.pin = p
+                    break
+                }
+            }
+        }
+        
+    }
+
+    
+    //MARK: coreData function
     
     
     func fetchAllPins() -> [Pin] {
@@ -83,19 +105,20 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
     
     func loadPins() {
         
+        var annotations = [MKPointAnnotation]()
         for pin in pins {
             
             let coordinate = CLLocationCoordinate2D(latitude: pin.latitude as! CLLocationDegrees, longitude: pin.longitude as! CLLocationDegrees)
-            var annotations = IBMap.annotations as! [MKPointAnnotation]
             let annotation = MKPointAnnotation()
             annotation.coordinate = coordinate
             annotation.title = pin.title
             annotations.append(annotation)
-            IBMap.addAnnotations(annotations)
-            
+            IBMap.addAnnotations(annotations)            
         }
     }
     
+    
+    //MARK: textfield Delegate
     
     func textFieldShouldReturn(textField: UITextField) -> Bool {
         
@@ -129,7 +152,6 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
                 
                 self.restoreMapRegion(true)
                 
-                
             }
             
         })
@@ -139,58 +161,85 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
         
     }
     
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
     
     func handleLongPressRecognizer(gesture:UILongPressGestureRecognizer)  {
         
-        if gesture.state != UIGestureRecognizerState.Ended {
-            return
+        if gesture.state == UIGestureRecognizerState.Began {
+            
+            var annotations = IBMap.annotations as! [MKPointAnnotation]
+            let point = gesture.locationInView(IBMap)
+            let coordinate = IBMap.convertPoint(point, toCoordinateFromView: IBMap) as CLLocationCoordinate2D
+            
+            for p in pins {
+                if p.latitude as! CLLocationDegrees  == coordinate.latitude  && p.longitude as! CLLocationDegrees  == coordinate.longitude {
+                    return
+                }
+            }
+            
+            
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinate
+            annotation.title = "Album photo : \(IBtextfield.text!)"
+            annotations.append(annotation)
+            IBMap.addAnnotations(annotations)
+            
+            curCoordinate.latitude = coordinate.latitude
+            curCoordinate.longitude = coordinate.longitude
+            
+        }
+        
+        if gesture.state == UIGestureRecognizerState.Changed {
+            
+            var annotations = IBMap.annotations as! [MKPointAnnotation]
+            let point = gesture.locationInView(IBMap)
+            let coordinate = IBMap.convertPoint(point, toCoordinateFromView: IBMap) as CLLocationCoordinate2D
+            
+            for index in 0...annotations.count-1 {
+                
+                let annotation = annotations[index]
+                if annotation.coordinate.latitude   == curCoordinate.latitude  && annotation.coordinate.longitude  == curCoordinate.longitude {
+                    annotation.coordinate = coordinate
+                    IBMap.addAnnotations(annotations)
+                    curCoordinate.latitude = coordinate.latitude
+                    curCoordinate.longitude = coordinate.longitude
+                    
+                    break
+                }
+                
+            }
+            
+            
         }
         
         
-        var annotations = IBMap.annotations as! [MKPointAnnotation]
-        let point = gesture.locationInView(IBMap)
-        let coordinate = IBMap.convertPoint(point, toCoordinateFromView: IBMap) as CLLocationCoordinate2D
+        if gesture.state == UIGestureRecognizerState.Ended {
+            
         
-        for p in pins {
-            if p.latitude as! CLLocationDegrees  == coordinate.latitude  && p.longitude as! CLLocationDegrees  == coordinate.longitude {
-                return
+            var dictionary = [String : AnyObject]()
+            dictionary[Pin.Keys.Title] = "Album photo : \(IBtextfield.text!)"
+            dictionary[Pin.Keys.Latitude] = NSNumber(double: curCoordinate.latitude)
+            dictionary[Pin.Keys.Longitude] = NSNumber(double: curCoordinate.longitude)
+            dictionary[Pin.Keys.Photos] = NSSet()
+            let pinToBeAdded = Pin(dictionary: dictionary, context: self.sharedContext)
+            pins.append(pinToBeAdded)            
+            // Append the pin to the array
+            
+            performUIUpdatesOnMain {
+                
+                // Save the context.
+                do {
+                    try self.sharedContext.save()
+                    
+                } catch _ {}
+                
             }
         }
         
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = coordinate
-        annotation.title = "Album photo : \(IBtextfield.text!)"
-        annotations.append(annotation)
-        IBMap.addAnnotations(annotations)
-        
-        var dictionary = [String : AnyObject]()
-        dictionary[Pin.Keys.Title] = annotation.title
-        dictionary[Pin.Keys.Latitude] = annotation.coordinate.latitude
-        dictionary[Pin.Keys.Longitude] = annotation.coordinate.longitude
-        dictionary[Pin.Keys.Photos] = NSSet()
-        
-        
-        performUIUpdatesOnMain {
-            
-            let pinToBeAdded = Pin(dictionary: dictionary, context: self.sharedContext)        
-            //pinToBeAdded.photos = NSSet()
-            // Append the pin to the array
-            
-            self.pins.append(pinToBeAdded)
-            
-            // Save the context.
-            do {
-                try self.sharedContext.save()
-            } catch _ {}
-            
-        }
-        
     }
+    
+    
+    //MARK: Map function
+    
     
     private func restoreMapRegion(animated: Bool) {
         
@@ -230,25 +279,6 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
         NSKeyedArchiver.archiveRootObject(dictionary, toFile: filePath)
     }
     
-    
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        
-        
-        if segue.identifier == "photoalbum"  {
-            
-            let controller = segue.destinationViewController as! PhotoAlbum            
-            for p in pins {
-                if p.latitude as! CLLocationDegrees  == curCoordinate.latitude  && p.longitude as! CLLocationDegrees  == curCoordinate.longitude {
-                    controller.pin = p
-                    break
-                }
-            }
-        }
-        
-        
-        
-    }
-    
     //MARK: Map View Delegate
     
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
@@ -261,7 +291,6 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
             pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
             pinView!.canShowCallout = true
             pinView?.pinTintColor = UIColor.redColor()
-            
         }
         else {
             pinView!.annotation = annotation
@@ -269,8 +298,6 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
         
         return pinView
     }
-    
-    
     
     
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
@@ -292,8 +319,8 @@ class TravelLocationsMap: UIViewController, MKMapViewDelegate, UIGestureRecogniz
             // Archive the dictionary into the filePath
             NSKeyedArchiver.archiveRootObject(dictionary, toFile: filePath)
             
+            
             self.performSegueWithIdentifier("photoalbum", sender: self)
-       
             
             
         }
