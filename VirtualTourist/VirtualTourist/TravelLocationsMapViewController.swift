@@ -221,16 +221,17 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
             dictionary[Pin.Keys.Longitude] = NSNumber(double: curCoordinate.longitude)
             dictionary[Pin.Keys.Photos] = NSSet()
             let pinToBeAdded = Pin(dictionary: dictionary, context: self.sharedContext)
-            pins.append(pinToBeAdded)            
             // Append the pin to the array
-            
+            pins.append(pinToBeAdded)
+
+            // Save the context.
+            do {
+                try sharedContext.save()
+                
+            } catch _ {}
+
             performUIUpdatesOnMain {
                 
-                // Save the context.
-                do {
-                    try self.sharedContext.save()
-                    
-                } catch _ {}
                 
             }
         }

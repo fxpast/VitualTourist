@@ -20,7 +20,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     @IBOutlet weak var IBEdit: UIBarButtonItem!
     
     var editFlag = false
-    
     var pin: Pin!
     var photo:Photo!
     
@@ -81,6 +80,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             annotations.append(annotation)
             IBMap.addAnnotations(annotations)
             
+            
         }
         
         
@@ -96,6 +96,9 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             loadPhotos()
         }
         else {
+            
+            
+            self.navigationItem.title = "Max photos : \(pin.photos!.count)"
             
             IBAlbum.reloadData()
             
@@ -124,7 +127,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     @IBAction func ActionEdit(sender: AnyObject) {
         
         editFlag = !editFlag
-        IBEdit.title = (editFlag) ? "Done" : "Edit"
+        IBEdit.title = (editFlag) ? "Done" : "Delete"
         
     }
     
@@ -134,7 +137,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     private func loadPhotos() {
 
-        
+      
         
         TheImageDB.sharedInstance().displayImageFromFlickrBySearch(longitude, Lat: latitude, completionHandlerFlickrBySearch: { (success, photosArray, errorString) in
             
@@ -143,20 +146,17 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 
                 
                 var dictionary = [String : AnyObject]()
+                var max = 0
                 
                 if photosArray!.count == 0 {
                     
-                    
                     dictionary[Photo.Keys.Title] = "noimage"
                     dictionary[Photo.Keys.UrlString] = ""
+                    dictionary[Photo.Keys.OnePin] = self.pin
                     
                     performUIUpdatesOnMain {
                         
-                        dictionary[Photo.Keys.OnePin] = self.pin
-                        
                         self.photo = Photo(dictionary: dictionary, context: self.sharedContext)
-                        // Append the photo to the array
-                        self.photo.onePin = self.pin
                         
                         // Save the context.
                         do {
@@ -174,6 +174,38 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 }
                 else{
                     
+                    
+                    performUIUpdatesOnMain({
+                        
+                        self.navigationItem.title = "Max photos : \(photosArray!.count)"
+                        
+                    })
+                    
+                    
+                    //creating placeholders
+                    dictionary[Photo.Keys.Title] = "noimage"
+                    dictionary[Photo.Keys.UrlString] = ""
+                    dictionary[Photo.Keys.OnePin] = self.pin
+                    dictionary[Photo.Keys.Image] = nil
+                    
+                    for _ in 0...photosArray!.count-1 {
+                        
+                        performUIUpdatesOnMain {
+                            
+                            self.photo = Photo(dictionary: dictionary, context: self.sharedContext)
+                            
+                            // Save the context.
+                            do {
+                                try self.sharedContext.save()
+                            } catch _ {}
+                            
+                            self.IBAlbum.reloadData()
+                            
+                        }
+
+                    }
+                    
+                    
                     for photoIndex in 0...photosArray!.count-1 {
                         
                         let photoDictionary = photosArray![photoIndex] as [String:AnyObject]
@@ -187,17 +219,16 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                         let imageURL = NSURL(string: imageUrlString)
                         if NSData(contentsOfURL: imageURL!) != nil {
                             
+                            max+=1
                             dictionary[Photo.Keys.Title] = photoTitle
                             dictionary[Photo.Keys.UrlString] = imageURL?.absoluteString
                             dictionary[Photo.Keys.Image] = NSData(contentsOfURL: imageURL!)
                             dictionary[Photo.Keys.OnePin] = self.pin
                             
-                            self.photo = Photo(dictionary: dictionary, context: self.sharedContext)
-                            // Append the photo to the array
-                            self.photo.onePin = self.pin
-                            
                             
                             performUIUpdatesOnMain {
+                            
+                                self.photo = Photo(dictionary: dictionary, context: self.sharedContext)
                                 
                                 // Save the context.
                                 do {
@@ -214,8 +245,11 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                             continue
                         }
                         
+                     
+                        
                         
                     }
+                    
                     
                     performUIUpdatesOnMain({
                         
@@ -253,19 +287,23 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         IBNewCollection.enabled = false
         
         
-        performUIUpdatesOnMain({
+        for value in pin.photos! {
             
-            self.sharedContext.deleteObject(self.photo)
+        
+            self.photo = value as! Photo
+            sharedContext.deleteObject(self.photo)
+            
             // Save the context.
             do {
-                try self.sharedContext.save()
+                try sharedContext.save()
             } catch let error as NSError {
                 print(error.debugDescription)
                 
             }
-            
-        })
-        
+            IBAlbum.reloadData()
+    
+        }
+       
         
         loadPhotos()
         
@@ -321,6 +359,20 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         
+        func deletePhoto() {
+            
+            
+            sharedContext.deleteObject(self.photo)
+            // Save the context.
+            do {
+                try sharedContext.save()
+            } catch let error as NSError {
+                print(error.debugDescription)
+                
+            }
+            
+            self.IBAlbum.reloadData()
+        }
         
         
         for (index, value) in self.pin.photos!.enumerate() {
@@ -337,27 +389,21 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             
             if running == false {
                
-                performSegueWithIdentifier("editimage", sender: self)
+                if photo.urlString == "" {
+                    
+                    deletePhoto()
+                }
+                else {
+                    performSegueWithIdentifier("editimage", sender: self)
+                    
+                }
+                
+                
             }
         }
         else {
             
-            performUIUpdatesOnMain({
-                
-                self.sharedContext.deleteObject(self.photo)
-                // Save the context.
-                do {
-                    try self.sharedContext.save()
-                } catch let error as NSError {
-                    print(error.debugDescription)
-                    
-                }
-                
-                self.IBAlbum.reloadData()
-                
-            })
-            
-            
+            deletePhoto()
         }
         
         

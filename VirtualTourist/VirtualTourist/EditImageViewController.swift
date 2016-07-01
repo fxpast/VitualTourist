@@ -51,21 +51,15 @@ class EditImageViewController: UIViewController {
         IBImageview.image = UIImage(named: "noimage")
         navigationItem.title = "noimage"
         
-        performUIUpdatesOnMain({
-            
-            
-            self.sharedContext.deleteObject(self.photo)
-            // Save the context.
-            do {
-                try self.sharedContext.save()
-            } catch let error as NSError {
-                print(error.debugDescription)
-                
-            }
-            
-        })
         
-
+        sharedContext.deleteObject(self.photo)
+        // Save the context.
+        do {
+            try sharedContext.save()
+        } catch let error as NSError {
+            print(error.debugDescription)
+            
+        }
         
     }
   

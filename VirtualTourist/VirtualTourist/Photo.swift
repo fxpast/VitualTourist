@@ -42,6 +42,7 @@ class Photo: NSManagedObject {
         title = dictionary[Keys.Title] as? String
         urlString = dictionary[Keys.UrlString] as? String
         image = dictionary[Keys.Image] as? NSData
+        onePin = dictionary[Keys.OnePin] as? Pin
         
     }
     
