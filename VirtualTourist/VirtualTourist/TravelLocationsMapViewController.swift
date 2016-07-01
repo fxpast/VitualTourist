@@ -22,10 +22,11 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
     
     @IBOutlet weak var IBMap: MKMapView!
     @IBOutlet weak var IBtextfield: UITextField!
+    @IBOutlet weak var IBDelete: UIBarButtonItem!
     
     
     var pins = [Pin]()
-    
+    var deleteFlag = false
     
     var sharedContext: NSManagedObjectContext {
         let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
@@ -69,6 +70,14 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
     }
     
     
+    @IBAction func ActionDelete(sender: AnyObject) {
+        
+        deleteFlag = !deleteFlag
+        IBDelete.title = (deleteFlag) ? "Done" : "Delete"
+        
+    }
+    
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         
         
@@ -84,7 +93,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
         }
         
     }
-
+    
     
     //MARK: coreData function
     
@@ -105,6 +114,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
     
     func loadPins() {
         
+        
+        
         var annotations = [MKPointAnnotation]()
         for pin in pins {
             
@@ -113,8 +124,9 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
             annotation.coordinate = coordinate
             annotation.title = pin.title
             annotations.append(annotation)
-            IBMap.addAnnotations(annotations)            
+            IBMap.addAnnotations(annotations)
         }
+        
     }
     
     
@@ -214,7 +226,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
         
         if gesture.state == UIGestureRecognizerState.Ended {
             
-        
+            
             var dictionary = [String : AnyObject]()
             dictionary[Pin.Keys.Title] = "Album photo : \(IBtextfield.text!)"
             dictionary[Pin.Keys.Latitude] = NSNumber(double: curCoordinate.latitude)
@@ -223,13 +235,13 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
             let pinToBeAdded = Pin(dictionary: dictionary, context: self.sharedContext)
             // Append the pin to the array
             pins.append(pinToBeAdded)
-
+            
             // Save the context.
             do {
                 try sharedContext.save()
                 
             } catch _ {}
-
+            
             performUIUpdatesOnMain {
                 
                 
@@ -306,22 +318,53 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
         
         if let coord = view.annotation?.coordinate {
             
+            if deleteFlag {
+                
+                for (index, p) in pins.enumerate() {
+                    
+                    
+                    if p.latitude as! CLLocationDegrees  == coord.latitude  && p.longitude as! CLLocationDegrees  == coord.longitude {
+                        
+                        
+                        sharedContext.deleteObject(p)
+                        
+                        // Save the context.
+                        do {
+                            try sharedContext.save()
+                        } catch let error as NSError {
+                            print(error.debugDescription)
+                            
+                        }
+                        
+                        pins.removeAtIndex(index)
+                        view.removeFromSuperview()
+                        break
+                    }
+                }
+                
+                
+            }
+            else {
+                
+                
+                curCoordinate.latitude = coord.latitude
+                curCoordinate.longitude = coord.longitude
+                
+                let dictionary = [
+                    "latitude" : coord.latitude,
+                    "longitude" : coord.longitude,
+                    "latitudeDelta" : IBMap.region.span.latitudeDelta,
+                    "longitudeDelta" : IBMap.region.span.longitudeDelta
+                ]
+                
+                // Archive the dictionary into the filePath
+                NSKeyedArchiver.archiveRootObject(dictionary, toFile: filePath)
+                
+                
+                self.performSegueWithIdentifier("photoalbum", sender: self)
+                
+            }
             
-            curCoordinate.latitude = coord.latitude
-            curCoordinate.longitude = coord.longitude
-            
-            let dictionary = [
-                "latitude" : coord.latitude,
-                "longitude" : coord.longitude,
-                "latitudeDelta" : IBMap.region.span.latitudeDelta,
-                "longitudeDelta" : IBMap.region.span.longitudeDelta
-            ]
-            
-            // Archive the dictionary into the filePath
-            NSKeyedArchiver.archiveRootObject(dictionary, toFile: filePath)
-            
-            
-            self.performSegueWithIdentifier("photoalbum", sender: self)
             
             
         }

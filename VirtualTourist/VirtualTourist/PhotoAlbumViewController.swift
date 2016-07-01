@@ -19,12 +19,11 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     @IBOutlet weak var IBAlbum: UICollectionView!
     @IBOutlet weak var IBEdit: UIBarButtonItem!
     
-    var editFlag = false
+    var deleteFlag = false
     var pin: Pin!
     var photo:Photo!
     
     var running:Bool!
-    
     var latitude:CLLocationDegrees!
     var longitude:CLLocationDegrees!
     
@@ -126,8 +125,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     @IBAction func ActionEdit(sender: AnyObject) {
         
-        editFlag = !editFlag
-        IBEdit.title = (editFlag) ? "Done" : "Delete"
+        deleteFlag = !deleteFlag
+        IBEdit.title = (deleteFlag) ? "Done" : "Delete"
         
     }
     
@@ -146,7 +145,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 
                 
                 var dictionary = [String : AnyObject]()
-                var max = 0
+                
                 
                 if photosArray!.count == 0 {
                     
@@ -219,7 +218,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                         let imageURL = NSURL(string: imageUrlString)
                         if NSData(contentsOfURL: imageURL!) != nil {
                             
-                            max+=1
+                            
                             dictionary[Photo.Keys.Title] = photoTitle
                             dictionary[Photo.Keys.UrlString] = imageURL?.absoluteString
                             dictionary[Photo.Keys.Image] = NSData(contentsOfURL: imageURL!)
@@ -290,8 +289,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         for value in pin.photos! {
             
         
-            self.photo = value as! Photo
-            sharedContext.deleteObject(self.photo)
+            photo = value as! Photo
+            sharedContext.deleteObject(photo)
             
             // Save the context.
             do {
@@ -359,20 +358,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         
-        func deletePhoto() {
-            
-            
-            sharedContext.deleteObject(self.photo)
-            // Save the context.
-            do {
-                try sharedContext.save()
-            } catch let error as NSError {
-                print(error.debugDescription)
-                
-            }
-            
-            self.IBAlbum.reloadData()
-        }
         
         
         for (index, value) in self.pin.photos!.enumerate() {
@@ -385,13 +370,34 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         }
         
         
-        if editFlag==false {
+        if deleteFlag==false {
             
             if running == false {
                
                 if photo.urlString == "" {
                     
-                    deletePhoto()
+                    for value in pin.photos! {
+                        
+                        photo = value as! Photo
+                        
+                        if photo.urlString == "" {
+                            
+                            sharedContext.deleteObject(photo)
+                            
+                            // Save the context.
+                            do {
+                                try sharedContext.save()
+                            } catch let error as NSError {
+                                print(error.debugDescription)
+                                
+                            }
+                            IBAlbum.reloadData()
+                            
+                        }
+                        
+                    }
+       
+                    
                 }
                 else {
                     performSegueWithIdentifier("editimage", sender: self)
@@ -403,7 +409,18 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         }
         else {
             
-            deletePhoto()
+            
+            sharedContext.deleteObject(self.photo)
+            // Save the context.
+            do {
+                try sharedContext.save()
+            } catch let error as NSError {
+                print(error.debugDescription)
+                
+            }
+            
+            IBAlbum.reloadData()
+        
         }
         
         
