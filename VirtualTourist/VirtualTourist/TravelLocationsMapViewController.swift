@@ -114,9 +114,14 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
     
     func loadPins() {
         
+         var annotations = IBMap.annotations as! [MKPointAnnotation]
         
-        
-        var annotations = [MKPointAnnotation]()
+        for annotation in annotations {
+            IBMap.removeAnnotation(annotation)
+        }
+       
+        annotations = [MKPointAnnotation]()
+
         for pin in pins {
             
             let coordinate = CLLocationCoordinate2D(latitude: pin.latitude as! CLLocationDegrees, longitude: pin.longitude as! CLLocationDegrees)
@@ -163,7 +168,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
                 NSKeyedArchiver.archiveRootObject(dictionary, toFile: self.filePath)
                 
                 self.restoreMapRegion(true)
-                
             }
             
         })
@@ -187,7 +191,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
                     return
                 }
             }
-            
             
             let annotation = MKPointAnnotation()
             annotation.coordinate = coordinate
@@ -217,10 +220,7 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
                     
                     break
                 }
-                
             }
-            
-            
         }
         
         
@@ -274,7 +274,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
         }
     }
     
-    
     private func saveMapRegion() {
         
         // Place the "center" and "span" of the map into a dictionary
@@ -312,7 +311,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
         return pinView
     }
     
-    
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         
         
@@ -325,7 +323,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
                     
                     if p.latitude as! CLLocationDegrees  == coord.latitude  && p.longitude as! CLLocationDegrees  == coord.longitude {
                         
-                        
                         sharedContext.deleteObject(p)
                         
                         // Save the context.
@@ -337,7 +334,8 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
                         }
                         
                         pins.removeAtIndex(index)
-                        view.removeFromSuperview()
+                        IBMap.removeAnnotation(view.annotation!)
+                        
                         break
                     }
                 }
@@ -345,7 +343,6 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
                 
             }
             else {
-                
                 
                 curCoordinate.latitude = coord.latitude
                 curCoordinate.longitude = coord.longitude
@@ -360,18 +357,13 @@ class TravelLocationsMapViewController: UIViewController, MKMapViewDelegate, UIG
                 // Archive the dictionary into the filePath
                 NSKeyedArchiver.archiveRootObject(dictionary, toFile: filePath)
                 
-                
                 self.performSegueWithIdentifier("photoalbum", sender: self)
                 
             }
             
-            
-            
         }
         
-        
     }
-    
     
     
     func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {

@@ -136,8 +136,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
     
     private func loadPhotos() {
 
-      
-        
         TheImageDB.sharedInstance().displayImageFromFlickrBySearch(longitude, Lat: latitude, completionHandlerFlickrBySearch: { (success, photosArray, errorString) in
             
             
@@ -149,10 +147,13 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                 
                 if photosArray!.count == 0 {
                     
+                    
+                    //creating placeholders
                     dictionary[Photo.Keys.Title] = "noimage"
                     dictionary[Photo.Keys.UrlString] = ""
                     dictionary[Photo.Keys.OnePin] = self.pin
-                    
+                    dictionary[Photo.Keys.Image] = NSData()
+                
                     performUIUpdatesOnMain {
                         
                         self.photo = Photo(dictionary: dictionary, context: self.sharedContext)
@@ -185,7 +186,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                     dictionary[Photo.Keys.Title] = "noimage"
                     dictionary[Photo.Keys.UrlString] = ""
                     dictionary[Photo.Keys.OnePin] = self.pin
-                    dictionary[Photo.Keys.Image] = nil
+                    dictionary[Photo.Keys.Image] = NSData()
                     
                     for _ in 0...photosArray!.count-1 {
                         
@@ -219,32 +220,34 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
                         if NSData(contentsOfURL: imageURL!) != nil {
                             
                             
-                            dictionary[Photo.Keys.Title] = photoTitle
-                            dictionary[Photo.Keys.UrlString] = imageURL?.absoluteString
-                            dictionary[Photo.Keys.Image] = NSData(contentsOfURL: imageURL!)
-                            dictionary[Photo.Keys.OnePin] = self.pin
-                            
-                            
-                            performUIUpdatesOnMain {
-                            
-                                self.photo = Photo(dictionary: dictionary, context: self.sharedContext)
+                            for (index, value) in self.pin.photos!.enumerate() {
                                 
-                                // Save the context.
-                                do {
-                                    try self.sharedContext.save()
-                                } catch _ {}
-                                
-                                self.IBAlbum.reloadData()
+                                if index == photoIndex {
+                                    self.photo = value as! Photo
+                                    self.photo.title = photoTitle
+                                    self.photo.urlString = imageURL?.absoluteString
+                                    self.photo.image = NSData(contentsOfURL: imageURL!)
+                                    self.photo.onePin = self.pin
+                                    
+                                    performUIUpdatesOnMain {
+                                        
+                                        // Save the context.
+                                        do {
+                                            try self.sharedContext.save()
+                                        } catch _ {}
+                                        
+                                        self.IBAlbum.reloadData()
+                                    }
+                                    
+                                    break
+                                }
                                 
                             }
-                            
-                            
+       
                         }
                         else {
                             continue
                         }
-                        
-                     
                         
                         
                     }
@@ -284,24 +287,28 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
         
         running = true
         IBNewCollection.enabled = false
-        
-        
-        for value in pin.photos! {
-            
-        
-            photo = value as! Photo
-            sharedContext.deleteObject(photo)
-            
-            // Save the context.
-            do {
-                try sharedContext.save()
-            } catch let error as NSError {
-                print(error.debugDescription)
+        var ok = true
+        while ok {
+            ok = false
+            for value in pin.photos! {
+                
+                ok = true
+                photo = value as! Photo
+                sharedContext.deleteObject(photo)
+                
+                // Save the context.
+                do {
+                    try sharedContext.save()
+                } catch let error as NSError {
+                    print(error.debugDescription)
+                    
+                }
+                IBAlbum.reloadData()
                 
             }
-            IBAlbum.reloadData()
-    
+            
         }
+        
        
         
         loadPhotos()
@@ -345,9 +352,15 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, UICollectio
             aView.image = UIImage(named: photo.title!)
         }
         else {
+            if photo.image != nil {
+                aView.image = UIImage(data: photo.image!)
+            }
+            else {
+                aView.image = UIImage(named: "noimage")
+            }
             
-            aView.image = UIImage(data: photo.image!)
-        }
+            }
+        
         
         item.backgroundView = aView
         
