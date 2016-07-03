@@ -100,8 +100,9 @@ class TheImageDB : NSObject {
                 return
             }
             
-            let randomPagesIndex = Int(arc4random_uniform(UInt32((pages))))
-            
+            print("pages : \(pages)")
+            let randomPagesIndex = Int(arc4random_uniform(UInt32((Constants.pages))))
+
             var tabParam = methodParameters
             tabParam[Constants.FlickrParameterKeys.Page] = randomPagesIndex
             let tabPar = tabParam

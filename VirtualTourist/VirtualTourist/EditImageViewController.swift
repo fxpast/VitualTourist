@@ -44,13 +44,15 @@ class EditImageViewController: UIViewController {
     }
     
     
+    @IBAction func ActionCancel(sender: AnyObject) {
+        
+        dismissViewControllerAnimated(true, completion: nil)
+        
+    }
     
     @IBAction func ActionDelete(sender: AnyObject) {
         
         IBDelete.enabled = false
-        IBImageview.image = UIImage(named: "noimage")
-        navigationItem.title = "noimage"
-        
         
         sharedContext.deleteObject(self.photo)
         // Save the context.
@@ -60,6 +62,8 @@ class EditImageViewController: UIViewController {
             print(error.debugDescription)
             
         }
+     
+        dismissViewControllerAnimated(true, completion: nil)
         
     }
   

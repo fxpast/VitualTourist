@@ -127,7 +127,7 @@
                         <outlet property="IBEdit" destination="frO-8C-1hi" id="9Dc-ZQ-sau"/>
                         <outlet property="IBMap" destination="zWb-k4-se5" id="NiD-Sg-SfT"/>
                         <outlet property="IBNewCollection" destination="CoB-iR-Kon" id="7Pp-gm-5Me"/>
-                        <segue destination="H7j-wg-omo" kind="push" identifier="editimage" id="ae0-pn-i80"/>
+                        <segue destination="H7j-wg-omo" kind="modal" identifier="editimage" id="ae0-pn-i80"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="tEY-aE-wT3" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -146,27 +146,39 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="qGP-Ze-5ml">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qGP-Ze-5ml">
                                 <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                             </imageView>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5aR-aK-NsK">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                                <items>
+                                    <barButtonItem systemItem="cancel" id="P66-Nv-pP9">
+                                        <connections>
+                                            <action selector="ActionCancel:" destination="H7j-wg-omo" id="FPy-tA-UqC"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="ElO-y1-FHV"/>
+                                    <barButtonItem title="Delete" id="cba-U2-BKM">
+                                        <connections>
+                                            <action selector="ActionDelete:" destination="H7j-wg-omo" id="E2z-Xm-xML"/>
+                                        </connections>
+                                    </barButtonItem>
+                                </items>
+                            </toolbar>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="qGP-Ze-5ml" firstAttribute="bottom" secondItem="13I-nS-uy8" secondAttribute="top" id="DdL-an-32g"/>
                             <constraint firstItem="qGP-Ze-5ml" firstAttribute="leading" secondItem="PuJ-sG-zhq" secondAttribute="leading" id="NpU-u7-4Og"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="5aR-aK-NsK" secondAttribute="trailing" constant="-20" id="SMM-gA-77P"/>
                             <constraint firstItem="qGP-Ze-5ml" firstAttribute="top" secondItem="7hU-cj-2UK" secondAttribute="bottom" id="ZtV-eY-vdL"/>
                             <constraint firstAttribute="trailing" secondItem="qGP-Ze-5ml" secondAttribute="trailing" id="i5u-E7-Cjn"/>
+                            <constraint firstItem="5aR-aK-NsK" firstAttribute="leading" secondItem="PuJ-sG-zhq" secondAttribute="leadingMargin" constant="-20" id="t07-OE-F7L"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" id="gfK-jG-JfS">
-                        <barButtonItem key="rightBarButtonItem" title="Delete" id="rgS-w3-n9v">
-                            <connections>
-                                <action selector="ActionDelete:" destination="H7j-wg-omo" id="2e4-nI-bFX"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" id="gfK-jG-JfS"/>
                     <connections>
-                        <outlet property="IBDelete" destination="rgS-w3-n9v" id="7Ix-q6-4dG"/>
+                        <outlet property="IBDelete" destination="cba-U2-BKM" id="EcR-LN-raK"/>
                         <outlet property="IBImageview" destination="qGP-Ze-5ml" id="IDM-lg-wDX"/>
                     </connections>
                 </viewController>

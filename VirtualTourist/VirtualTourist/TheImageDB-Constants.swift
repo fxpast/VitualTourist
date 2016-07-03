@@ -15,6 +15,8 @@ extension TheImageDB {
 
 struct Constants {
     
+    static let pages = 30
+    
     // MARK: Flickr
     struct Flickr {
         static let APIScheme = "https"
